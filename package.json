@@ -1,0 +1,32 @@
+{
+  "name": "tupu-crawler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./build/src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "check": "gts check",
+    "clean": "gts clean",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/lodash": "^4.14.85",
+    "@types/node-fetch": "^1.6.7",
+    "@types/winston": "^2.3.7",
+    "gts": "^0.5.1",
+    "typescript": "^2.6.1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "moment": "^2.19.2",
+    "node-fetch": "^1.7.3",
+    "winston": "^2.4.0"
+  }
+}
