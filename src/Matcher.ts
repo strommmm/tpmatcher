@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import * as moment from 'moment';
 import fetch from 'node-fetch';
 import { setInterval } from 'timers';
+import * as parser from 'xml2json';
 
 import { RESPONSE_TYPES } from './constants';
 import utils from './utils';
@@ -60,22 +61,36 @@ class Matcher {
         logger.info(`开始 ${this.config.name}`);
         logger.info('请求数据');
         logger.info(`匹配关键词 ${_.join(this.keywords, ' , ')}`)
-        const data = await this.fetch_data();
-        const matchs = this.match_data(data);
-        if (matchs.length === 0) {
-            logger.info('未匹配到新闻');
-            return;
+        try {
+            const data = await this.fetch_data();
+            const matchs = this.match_data(data);
+            if (matchs.length === 0) {
+                logger.info('未匹配到新闻');
+                return;
+            }
+            this.match_callback && this.match_callback(matchs);
+        } catch (e) {
+            logger.error('执行出错');
+            logger.error(e);
         }
-        this.match_callback && this.match_callback(matchs);
     }
 
     private fetch_data = async (): Promise<any[]> => {
         const resp = await fetch(this.config.fetch_url);
-        const resp_json = await resp.json();
+        let resp_json;
+        if (this.config.resp_type === RESPONSE_TYPES.JSON) {
+            resp_json = await resp.json();
+        } else if (this.config.resp_type === RESPONSE_TYPES.XML) {
+            const resp_text = await resp.text();
+            resp_json = parser.toJson(resp_text, {
+                object: true,
+            });
+        }
         if (!this.config.list_path) {
             return resp_json;
         }
-        return _.get<any[]>(resp_json, this.config.list_path, []);
+        const resp_list = _.get<any[]>(resp_json, this.config.list_path, []);
+        return resp_list;
     }
 
     private match_data = (data: any[]): Array<IMatchData> => {
@@ -104,12 +119,12 @@ class Matcher {
                 continue;
             }
             const real_to_match = to_match.toLowerCase();
-            logger.info(`匹配文本： ${real_to_match}`);
+            // logger.info(`匹配文本： ${real_to_match}`);
             for (const kw of this.keywords) {
                 const real_kw = kw.toLowerCase();
-                logger.info(`匹配关键词： ${real_kw}`);
+                // logger.info(`匹配关键词： ${real_kw}`);
                 const m = real_to_match.indexOf(real_kw);
-                logger.info(m);
+                // logger.info(m);
                 if (m < 0) {
                     continue;
                 }

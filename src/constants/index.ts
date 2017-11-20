@@ -1,5 +1,6 @@
 
 export const RESPONSE_TYPES = {
     JSON: 'json',
-    HTML: 'html'
+    HTML: 'html',
+    XML: 'xml'
 }
